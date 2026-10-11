@@ -1,0 +1,549 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		98B30CF6307B9DE90049AE6D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98B30CDE307B9DE90049AE6D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 98B30CE5307B9DE90049AE6D;
+			remoteInfo = PlainX;
+		};
+		98B30D00307B9DE90049AE6D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98B30CDE307B9DE90049AE6D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 98B30CE5307B9DE90049AE6D;
+			remoteInfo = PlainX;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		98B30CE6307B9DE90049AE6D /* PlainX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlainX.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		98B30CF5307B9DE90049AE6D /* PlainXTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlainXTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		98B30CFF307B9DE90049AE6D /* PlainXUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlainXUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		98B30CE8307B9DE90049AE6D /* PlainX */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PlainX;
+			sourceTree = "<group>";
+		};
+		98B30CF8307B9DE90049AE6D /* PlainXTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PlainXTests;
+			sourceTree = "<group>";
+		};
+		98B30D02307B9DE90049AE6D /* PlainXUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PlainXUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		98B30CE3307B9DE90049AE6D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		98B30CF2307B9DE90049AE6D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		98B30CFC307B9DE90049AE6D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		98B30CDD307B9DE90049AE6D = {
+			isa = PBXGroup;
+			children = (
+				98B30CE8307B9DE90049AE6D /* PlainX */,
+				98B30CF8307B9DE90049AE6D /* PlainXTests */,
+				98B30D02307B9DE90049AE6D /* PlainXUITests */,
+				98B30CE7307B9DE90049AE6D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		98B30CE7307B9DE90049AE6D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				98B30CE6307B9DE90049AE6D /* PlainX.app */,
+				98B30CF5307B9DE90049AE6D /* PlainXTests.xctest */,
+				98B30CFF307B9DE90049AE6D /* PlainXUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		98B30CE5307B9DE90049AE6D /* PlainX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 98B30D07307B9DE90049AE6D /* Build configuration list for PBXNativeTarget "PlainX" */;
+			buildPhases = (
+				98B30CE2307B9DE90049AE6D /* Sources */,
+				98B30CE3307B9DE90049AE6D /* Frameworks */,
+				98B30CE4307B9DE90049AE6D /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				98B30CE8307B9DE90049AE6D /* PlainX */,
+			);
+			name = PlainX;
+			productName = PlainX;
+			productReference = 98B30CE6307B9DE90049AE6D /* PlainX.app */;
+			productType = "com.apple.product-type.application";
+		};
+		98B30CF4307B9DE90049AE6D /* PlainXTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 98B30D0A307B9DE90049AE6D /* Build configuration list for PBXNativeTarget "PlainXTests" */;
+			buildPhases = (
+				98B30CF1307B9DE90049AE6D /* Sources */,
+				98B30CF2307B9DE90049AE6D /* Frameworks */,
+				98B30CF3307B9DE90049AE6D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				98B30CF7307B9DE90049AE6D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				98B30CF8307B9DE90049AE6D /* PlainXTests */,
+			);
+			name = PlainXTests;
+			productName = PlainXTests;
+			productReference = 98B30CF5307B9DE90049AE6D /* PlainXTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		98B30CFE307B9DE90049AE6D /* PlainXUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 98B30D0D307B9DE90049AE6D /* Build configuration list for PBXNativeTarget "PlainXUITests" */;
+			buildPhases = (
+				98B30CFB307B9DE90049AE6D /* Sources */,
+				98B30CFC307B9DE90049AE6D /* Frameworks */,
+				98B30CFD307B9DE90049AE6D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				98B30D01307B9DE90049AE6D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				98B30D02307B9DE90049AE6D /* PlainXUITests */,
+			);
+			name = PlainXUITests;
+			productName = PlainXUITests;
+			productReference = 98B30CFF307B9DE90049AE6D /* PlainXUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98B30CDE307B9DE90049AE6D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					98B30CE5307B9DE90049AE6D = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					98B30CF4307B9DE90049AE6D = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 98B30CE5307B9DE90049AE6D;
+					};
+					98B30CFE307B9DE90049AE6D = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 98B30CE5307B9DE90049AE6D;
+					};
+				};
+			};
+			buildConfigurationList = 98B30CE1307B9DE90049AE6D /* Build configuration list for PBXProject "PlainX" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 98B30CDD307B9DE90049AE6D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 98B30CE7307B9DE90049AE6D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				98B30CE5307B9DE90049AE6D /* PlainX */,
+				98B30CF4307B9DE90049AE6D /* PlainXTests */,
+				98B30CFE307B9DE90049AE6D /* PlainXUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		98B30CE4307B9DE90049AE6D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		98B30CF3307B9DE90049AE6D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		98B30CFD307B9DE90049AE6D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		98B30CE2307B9DE90049AE6D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		98B30CF1307B9DE90049AE6D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		98B30CFB307B9DE90049AE6D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		98B30CF7307B9DE90049AE6D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 98B30CE5307B9DE90049AE6D /* PlainX */;
+			targetProxy = 98B30CF6307B9DE90049AE6D /* PBXContainerItemProxy */;
+		};
+		98B30D01307B9DE90049AE6D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 98B30CE5307B9DE90049AE6D /* PlainX */;
+			targetProxy = 98B30D00307B9DE90049AE6D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		98B30D05307B9DE90049AE6D /* Debug configuration for PBXProject "PlainX" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		98B30D06307B9DE90049AE6D /* Release configuration for PBXProject "PlainX" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 83B68838R2;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		98B30D08307B9DE90049AE6D /* Debug configuration for PBXNativeTarget "PlainX" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batukucukaydin.PlainX;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		98B30D09307B9DE90049AE6D /* Release configuration for PBXNativeTarget "PlainX" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batukucukaydin.PlainX;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		98B30D0B307B9DE90049AE6D /* Debug configuration for PBXNativeTarget "PlainXTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batukucukaydin.PlainXTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PlainX.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PlainX";
+			};
+			name = Debug;
+		};
+		98B30D0C307B9DE90049AE6D /* Release configuration for PBXNativeTarget "PlainXTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batukucukaydin.PlainXTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PlainX.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PlainX";
+			};
+			name = Release;
+		};
+		98B30D0E307B9DE90049AE6D /* Debug configuration for PBXNativeTarget "PlainXUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batukucukaydin.PlainXUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = PlainX;
+			};
+			name = Debug;
+		};
+		98B30D0F307B9DE90049AE6D /* Release configuration for PBXNativeTarget "PlainXUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 83B68838R2;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.batukucukaydin.PlainXUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = PlainX;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		98B30CE1307B9DE90049AE6D /* Build configuration list for PBXProject "PlainX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				98B30D05307B9DE90049AE6D /* Debug configuration for PBXProject "PlainX" */,
+				98B30D06307B9DE90049AE6D /* Release configuration for PBXProject "PlainX" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		98B30D07307B9DE90049AE6D /* Build configuration list for PBXNativeTarget "PlainX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				98B30D08307B9DE90049AE6D /* Debug configuration for PBXNativeTarget "PlainX" */,
+				98B30D09307B9DE90049AE6D /* Release configuration for PBXNativeTarget "PlainX" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		98B30D0A307B9DE90049AE6D /* Build configuration list for PBXNativeTarget "PlainXTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				98B30D0B307B9DE90049AE6D /* Debug configuration for PBXNativeTarget "PlainXTests" */,
+				98B30D0C307B9DE90049AE6D /* Release configuration for PBXNativeTarget "PlainXTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		98B30D0D307B9DE90049AE6D /* Build configuration list for PBXNativeTarget "PlainXUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				98B30D0E307B9DE90049AE6D /* Debug configuration for PBXNativeTarget "PlainXUITests" */,
+				98B30D0F307B9DE90049AE6D /* Release configuration for PBXNativeTarget "PlainXUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 98B30CDE307B9DE90049AE6D /* Project object */;
+	validationLevel = 1;
+}
