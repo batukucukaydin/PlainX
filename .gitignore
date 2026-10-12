@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+*.xcuserdatad
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Generated artifacts
+build/dist/
+build/benchmark-fixtures/
+
+# Editor
+.idea/
+.vscode/
+*.swp
