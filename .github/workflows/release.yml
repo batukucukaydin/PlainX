@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, package, and publish
+    runs-on: macos-14
+    timeout-minutes: 90
+
+    env:
+      # Configure these repository secrets to enable signing/notarization.
+      # Without them the workflow produces an unsigned/ad-hoc artifact.
+      DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+      NOTARY_PROFILE: ${{ secrets.NOTARY_PROFILE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Universal 2 Release
+        run: Scripts/make-universal.sh
+
+      - name: Import signing certificate (skipped when no secret)
+        if: env.DEVELOPER_ID_APPLICATION != ''
+        env:
+          CERTIFICATE_P12: ${{ secrets.DEVELOPER_ID_CERTIFICATE_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${CERTIFICATE_P12:-}" ]]; then
+            echo "No certificate secret; skipping import."
+            exit 0
+          fi
+          echo "$CERTIFICATE_P12" | base64 --decode > /tmp/certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import /tmp/certificate.p12 -k build.keychain \
+            -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm -f /tmp/certificate.p12
+
+      - name: Sign app (skipped when no identity)
+        if: env.DEVELOPER_ID_APPLICATION != ''
+        run: Scripts/sign.sh
+
+      - name: Package DMG + checksums
+        run: Scripts/package-dmg.sh
+
+      - name: Notarize (skipped when no profile)
+        if: env.NOTARY_PROFILE != ''
+        run: |
+          DMG=$(ls build/dist/*.dmg | head -1)
+          Scripts/notarize.sh "$DMG"
+
+      - name: Regenerate checksums after stapling
+        if: env.NOTARY_PROFILE != ''
+        run: |
+          DMG=$(ls build/dist/*.dmg | head -1)
+          Scripts/generate-checksums.sh "$DMG"
+
+      - name: Upload artifacts to the workflow run
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlainX-Editor-dmg
+          path: |
+            build/dist/*.dmg
+            build/dist/*.sha256
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/dist/*.dmg
+            build/dist/*.sha256
+          generate_release_notes: true
+          draft: false

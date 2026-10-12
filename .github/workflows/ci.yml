@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build (Debug, native architecture)
+        run: |
+          xcodebuild -project PlainX.xcodeproj \
+            -scheme PlainX \
+            -configuration Debug \
+            -derivedDataPath build \
+            build
+
+      - name: Run unit and integration tests
+        run: |
+          xcodebuild -project PlainX.xcodeproj \
+            -scheme PlainX \
+            -configuration Debug \
+            -derivedDataPath build \
+            -destination 'platform=macOS' \
+            test \
+            -only-testing:PlainXTests
+
+      - name: Verify Universal 2 Release build
+        run: Scripts/make-universal.sh
+
+      - name: Check app bundle size
+        run: |
+          du -sh build/Build/Products/Release/PlainX.app
+          lipo -archs build/Build/Products/Release/PlainX.app/Contents/MacOS/PlainX
