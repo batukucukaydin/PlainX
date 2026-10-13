@@ -26,10 +26,15 @@ enum AboutPanelController {
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         let icon = NSImageView()
-        if let logo = NSImage(named: "PlainX-Logo") ?? Bundle.main.image(forResource: "PlainX-Logo") {
+        // Prefer the compiled app icon (the brand artwork masked for macOS);
+        // fall back to the bundled master logo, then the generic app icon.
+        if let appIcon = NSApp.applicationIconImage {
+            icon.image = appIcon
+        } else if let logoURL = Bundle.main.url(forResource: "PlainX-Logo", withExtension: "png"),
+                  let logo = NSImage(contentsOf: logoURL) {
             icon.image = logo
         } else {
-            icon.image = NSApp.applicationIconImage
+            icon.image = NSImage(named: "PlainX-Logo")
         }
         icon.imageScaling = .scaleProportionallyUpOrDown
         icon.translatesAutoresizingMaskIntoConstraints = false

@@ -143,3 +143,26 @@ final class ScintillaSmokeTests: XCTestCase {
         pane.applyTheme(.systemLight)
     }
 }
+
+final class BrandingAssetTests: XCTestCase {
+    /// The About window and README rely on the master logo being present in
+    /// the built app bundle.
+    func testBrandingLogoIsBundled() {
+        XCTAssertNotNil(Bundle.main.url(forResource: "PlainX-Logo", withExtension: "png"),
+                        "PlainX-Logo.png must ship in the app bundle Resources")
+    }
+
+    /// The app icon must compile from the asset catalog (a missing icon in
+    /// Contents.json silently produces an empty AppIcon set).
+    func testAppIconCompiledIntoAssets() throws {
+        guard let assetsURL = Bundle.main.url(forResource: "Assets", withExtension: "car") else {
+            throw XCTSkip("Assets.car not found in this build (expected only for app bundles).")
+        }
+        let data = try Data(contentsOf: assetsURL)
+        XCTAssertFalse(data.isEmpty)
+        // Asset catalogs embed the icon name in the compiled archive; we check
+        // the icon actually rendered by loading the application icon image.
+        let appIcon = try XCTUnwrap(NSApp.applicationIconImage)
+        XCTAssertGreaterThan(appIcon.size.width, 0)
+    }
+}

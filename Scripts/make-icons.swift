@@ -66,7 +66,11 @@ func emblemBounds(of image: CGImage) -> CGRect {
     }
 
     let pixels = data.bindMemory(to: UInt8.self, capacity: sampleWidth * sampleHeight * 4)
-    let threshold: Int = 26 // out of 255; the emblem is a dark gradient but clearly above flat black
+    // The emblem's squircle has a bright rim highlight against a flat black
+    // canvas. Detecting bright pixels (rim + letters, both inside the rim)
+    // gives the true squircle bounds; a low threshold would pick up the dark
+    // glow around the artwork and keep the canvas.
+    let threshold: Int = 96
 
     var minX = sampleWidth
     var minY = sampleHeight
@@ -109,7 +113,12 @@ func emblemBounds(of image: CGImage) -> CGRect {
     let side = max(boxInTopLeft.width, boxInTopLeft.height)
     let centerX = boxInTopLeft.midX
     let centerY = boxInTopLeft.midY
-    return CGRect(x: centerX - side / 2, y: centerY - side / 2, width: side, height: side)
+    // Tiny outward margin so the rim highlight is never clipped.
+    let margin = side * 0.005
+    return CGRect(x: centerX - side / 2 - margin,
+                  y: centerY - side / 2 - margin,
+                  width: side + margin * 2,
+                  height: side + margin * 2)
 }
 
 let bounds = emblemBounds(of: cgSource)
@@ -117,6 +126,39 @@ guard let emblem = cgSource.cropping(to: bounds) else {
     FileHandle.standardError.write(Data("error: cannot crop emblem\n".utf8))
     exit(1)
 }
+
+// The master artwork draws its squircle on a flat black canvas, so a square
+// crop keeps black wedges in the four corners. Measure the squircle's corner
+// radius from the artwork itself and mask the crop to that rounded shape so
+// the canvas becomes transparent.
+func measuredCornerRadiusFraction(of image: CGImage) -> CGFloat {
+    let sample = 256
+    guard let context = CGContext(data: nil, width: sample, height: sample,
+                                  bitsPerComponent: 8, bytesPerRow: sample * 4,
+                                  space: CGColorSpaceCreateDeviceRGB(),
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+        return 0.2237
+    }
+    context.interpolationQuality = .medium
+    context.draw(image, in: CGRect(x: 0, y: 0, width: sample, height: sample))
+    guard let data = context.data else { return 0.2237 }
+    let pixels = data.bindMemory(to: UInt8.self, capacity: sample * sample * 4)
+    // Scan a row slightly below the top edge for the first non-black pixel.
+    let y = 2
+    for x in 0..<sample {
+        let offset = (y * sample + x) * 4
+        let luminance = (Int(pixels[offset]) * 299 + Int(pixels[offset + 1]) * 587 + Int(pixels[offset + 2]) * 114) / 1000
+        if luminance > 40 {
+            return min(0.3, max(0.12, CGFloat(x) / CGFloat(sample)))
+        }
+    }
+    return 0.2237
+}
+
+// Slightly overshoot the measured radius: the artwork uses a continuous
+// (squircle) corner, and a circular mask with the exact straight-edge radius
+// would leave thin black wedges at the extreme corners.
+let cornerRadiusFraction = min(0.30, measuredCornerRadiusFraction(of: emblem) * 1.18)
 
 // MARK: - Compose renditions.
 
@@ -160,7 +202,19 @@ for rendition in renditions {
     context.interpolationQuality = .high
     let contentSide = CGFloat(size) * contentFraction
     let inset = (CGFloat(size) - contentSide) / 2
-    context.draw(emblem, in: CGRect(x: inset, y: inset, width: contentSide, height: contentSide))
+    let rect = CGRect(x: inset, y: inset, width: contentSide, height: contentSide)
+    // Mask to the artwork's squircle so the black canvas corners become
+    // transparent instead of showing as wedges behind the icon. The emblem is
+    // drawn ~1.5% larger than the mask so the dark border ring that surrounds
+    // the artwork's rim is clipped away as well.
+    let radius = contentSide * cornerRadiusFraction
+    let overscan = contentSide * 0.015
+    let drawRect = rect.insetBy(dx: -overscan, dy: -overscan)
+    context.saveGState()
+    context.addPath(CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil))
+    context.clip()
+    context.draw(emblem, in: drawRect)
+    context.restoreGState()
 
     guard let output = context.makeImage() else {
         FileHandle.standardError.write(Data("error: cannot render \(rendition.fileName)\n".utf8))
@@ -177,4 +231,24 @@ for rendition in renditions {
     try png.write(to: destination)
 }
 
-fputs("PlainX icons generated: emblem side \(side64)px, content fraction \(contentFraction)\n", stderr)
+// Keep the asset catalog manifest in sync so the app icon actually compiles.
+let contentsJSON = """
+{
+  "images" : [
+    { "idiom" : "mac", "scale" : "1x", "size" : "16x16", "filename" : "icon_16x16.png" },
+    { "idiom" : "mac", "scale" : "2x", "size" : "16x16", "filename" : "icon_16x16@2x.png" },
+    { "idiom" : "mac", "scale" : "1x", "size" : "32x32", "filename" : "icon_32x32.png" },
+    { "idiom" : "mac", "scale" : "2x", "size" : "32x32", "filename" : "icon_32x32@2x.png" },
+    { "idiom" : "mac", "scale" : "1x", "size" : "128x128", "filename" : "icon_128x128.png" },
+    { "idiom" : "mac", "scale" : "2x", "size" : "128x128", "filename" : "icon_128x128@2x.png" },
+    { "idiom" : "mac", "scale" : "1x", "size" : "256x256", "filename" : "icon_256x256.png" },
+    { "idiom" : "mac", "scale" : "2x", "size" : "256x256", "filename" : "icon_256x256@2x.png" },
+    { "idiom" : "mac", "scale" : "1x", "size" : "512x512", "filename" : "icon_512x512.png" },
+    { "idiom" : "mac", "scale" : "2x", "size" : "512x512", "filename" : "icon_512x512@2x.png" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}
+"""
+try contentsJSON.write(to: outputDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
+
+fputs("PlainX icons generated: emblem side \(side64)px, content fraction \(contentFraction), corner radius fraction \(cornerRadiusFraction)\n", stderr)
