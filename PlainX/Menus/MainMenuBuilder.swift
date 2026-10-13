@@ -95,6 +95,7 @@ enum MainMenuBuilder {
         items.append(menuItem("file.save", dispatcher))
         items.append(menuItem("file.saveAs", dispatcher))
         items.append(menuItem("file.saveAll", dispatcher))
+        items.append(menuItem("file.reload", dispatcher))
         items.append(separator())
         items.append(menuItem("file.rename", dispatcher))
         items.append(menuItem("file.revealInFinder", dispatcher))
@@ -208,6 +209,7 @@ enum MainMenuBuilder {
             menuItem("view.toggleCurrentLineHighlight", dispatcher),
             separator(),
             menuItem("view.splitView", dispatcher),
+            menuItem("view.splitViewHorizontal", dispatcher),
             menuItem("view.unsplit", dispatcher),
             menuItem("nav.focusNextPane", dispatcher),
             separator(),
@@ -311,6 +313,7 @@ enum MainMenuBuilder {
         let menu = NSMenu(title: "Help")
         menu.addItem(menuItem("help.shortcuts", dispatcher))
         menu.addItem(menuItem("help.releaseNotes", dispatcher))
+        menu.addItem(menuItem("help.checkForUpdates", dispatcher))
         let top = NSMenuItem(title: "Help", action: nil, keyEquivalent: "")
         top.submenu = menu
         NSApp.helpMenu = menu

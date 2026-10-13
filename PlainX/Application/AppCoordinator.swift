@@ -546,6 +546,24 @@ final class AppCoordinator {
         }
     }
 
+    /// Reloads the active tab from disk (regular editor or Large File viewer).
+    func reloadActiveTab(in window: MainWindowController) {
+        guard let tab = window.activeTab, let url = tab.document.url else { return }
+        if let editorTab = tab as? DocumentTabController {
+            reload(document: tab.document, tab: editorTab)
+            return
+        }
+        if let largeTab = tab as? LargeFileTabController {
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                presentError(FileLoaderError.unreadable(url, CocoaError(.fileNoSuchFile)), in: window)
+                return
+            }
+            largeTab.viewer.reloadFromDisk()
+            window.clearBanners()
+            window.updateTabStrip()
+        }
+    }
+
     func locateMissingFile(for document: PlainXDocument, tab: DocumentTabController) {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false

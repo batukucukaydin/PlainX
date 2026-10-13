@@ -16,6 +16,14 @@ protocol DocumentTabControllerDelegate: AnyObject {
     func documentTabRequestsClose(_ tab: DocumentTabController)
 }
 
+/// How a second editor pane is arranged relative to the first.
+enum SplitOrientation {
+    /// Panes side by side (vertical divider).
+    case vertical
+    /// Panes stacked (horizontal divider).
+    case horizontal
+}
+
 final class DocumentTabController: NSObject, EditorPaneControllerDelegate, DocumentTab {
     let id = UUID()
     let document: PlainXDocument
@@ -232,7 +240,7 @@ final class DocumentTabController: NSObject, EditorPaneControllerDelegate, Docum
     // MARK: - Splitting
 
     @discardableResult
-    func splitIntoSecondPane() -> EditorPaneController {
+    func splitIntoSecondPane(orientation: SplitOrientation = .vertical) -> EditorPaneController {
         if isSplit {
             activePaneIndex = (activePaneIndex + 1) % panes.count
             return activePane
@@ -245,7 +253,8 @@ final class DocumentTabController: NSObject, EditorPaneControllerDelegate, Docum
         panes.append(second)
 
         let split = NSSplitView()
-        split.isVertical = true
+        // Vertical orientation places panes side by side; horizontal stacks them.
+        split.isVertical = (orientation == .vertical)
         split.dividerStyle = .thin
         split.translatesAutoresizingMaskIntoConstraints = false
 

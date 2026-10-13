@@ -392,6 +392,29 @@ final class LargeFileViewController: NSViewController {
         statusLabel.stringValue = summary
     }
 
+    /// Re-reads the file from disk (used by File → Reload from Disk).
+    func reloadFromDisk() {
+        searchService.cancel()
+        searchTask?.cancel()
+        matchLines = []
+        currentMatchIndex = -1
+        matchLabel.stringValue = ""
+        textView.searchMatches = [:]
+        textView.currentSearchLine = nil
+        textView.filteredLines = nil
+        filterField.stringValue = ""
+        do {
+            try backing.reloadFromDisk()
+        } catch {
+            Log.largeFile.error("Large file reload failed: \(error.localizedDescription, privacy: .public)")
+        }
+        backing.startIndexing()
+        progressIndicator.doubleValue = 0
+        progressIndicator.isHidden = false
+        textView.resetHeightCache()
+        updateStatus()
+    }
+
     func applyTheme(_ theme: EditorTheme) {
         textView.theme = theme
         scrollView.backgroundColor = theme.background

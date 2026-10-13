@@ -303,11 +303,29 @@ final class TabItemView: NSView {
         }
     }
 
+    private var dragOrigin: NSPoint?
+
     override func mouseDown(with event: NSEvent) {
-        if event.type == .leftMouseDown && event.clickCount == 2 {
-            // Double click selects; nothing extra required.
-        }
+        dragOrigin = event.locationInWindow
         delegate?.tabItemDidSelect(itemID)
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let origin = dragOrigin, let stack = superview else { return }
+        let horizontalTravel = abs(event.locationInWindow.x - origin.x)
+        guard horizontalTravel > 12 else { return }
+        let pointInStack = stack.convert(event.locationInWindow, from: nil)
+        var targetIndex = 0
+        for sibling in stack.subviews where sibling !== self {
+            if pointInStack.x > sibling.frame.midX {
+                targetIndex += 1
+            }
+        }
+        delegate?.tabItem(self.itemID, didDragTo: targetIndex)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        dragOrigin = nil
     }
 
     override func otherMouseUp(with event: NSEvent) {

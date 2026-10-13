@@ -62,6 +62,11 @@ enum StandardCommands {
                 guard let window = context.window else { return }
                 context.coordinator?.saveAll(in: window)
             },
+            Command(id: "file.reload", title: "Reload from Disk", category: "File", keyBinding: .cmd("r"),
+                    keywords: ["refresh", "revert"], isEnabled: { $0.document?.url != nil }) { context in
+                guard let window = context.window else { return }
+                context.coordinator?.reloadActiveTab(in: window)
+            },
             Command(id: "file.closeTab", title: "Close Tab", category: "File", keyBinding: .cmd("w"),
                     isEnabled: { $0.activeTab != nil }) { context in
                 guard let tab = context.activeTab else { return }
@@ -433,6 +438,11 @@ enum StandardCommands {
                 context.tab?.splitIntoSecondPane()
                 context.window?.updateWindowTitle()
             },
+            Command(id: "view.splitViewHorizontal", title: "Split View Horizontally", category: "View",
+                    keyBinding: .cmdOption("h"), keywords: ["pane", "stacked"]) { context in
+                context.tab?.splitIntoSecondPane(orientation: .horizontal)
+                context.window?.updateWindowTitle()
+            },
             Command(id: "view.unsplit", title: "Unsplit View", category: "View",
                     isEnabled: { $0.tab?.isSplit ?? false }) { context in
                 context.tab?.unsplit()
@@ -704,6 +714,10 @@ enum StandardCommands {
             },
             Command(id: "help.releaseNotes", title: "Release Notes", category: "Help", isRecordable: false) { context in
                 context.coordinator?.showReleaseNotes()
+            },
+            Command(id: "help.checkForUpdates", title: "Check for Updates…", category: "Help", isRecordable: false,
+                    keywords: ["github", "releases"]) { _ in
+                NSWorkspace.shared.open(PlainXProject.releasesURL)
             },
         ]
     }
