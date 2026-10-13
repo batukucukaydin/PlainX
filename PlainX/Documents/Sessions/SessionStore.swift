@@ -108,6 +108,10 @@ final class SessionStore {
                 )
                 tabs.append(sessionTab)
             }
+            // A window showing only the Welcome screen has nothing to
+            // restore; persisting it as a zero-tab window would make the next
+            // launch open and immediately close every window.
+            guard !tabs.isEmpty else { continue }
             windows.append(SessionWindow(
                 frameX: frame.map { Double($0.origin.x) }, frameY: frame.map { Double($0.origin.y) },
                 frameWidth: frame.map { Double($0.width) }, frameHeight: frame.map { Double($0.height) },
@@ -161,8 +165,11 @@ final class SessionStore {
                 window.selectTab(at: min(windowSession.activeTabIndex, window.tabs.count - 1))
                 restoredAny = true
             } else {
-                window.window?.close()
-                coordinator.windowDidClose(window)
+                // Nothing restorable in this window: show the Welcome screen
+                // rather than closing it (closing the last window would quit
+                // the app on launch).
+                coordinator.showWelcome(in: window)
+                restoredAny = true
             }
         }
         return restoredAny
