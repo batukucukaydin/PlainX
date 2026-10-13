@@ -43,8 +43,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         )
         window.title = "PlainX"
         window.minSize = NSSize(width: 420, height: 260)
-        window.setFrameAutosaveName("PlainXMainWindow")
         window.tabbingMode = .disallowed
+        // Sessions are managed by PlainX itself; keep AppKit's window
+        // restoration out of the way.
+        window.isRestorable = false
         // Tabs live in the titlebar band: transparent chrome, no title text,
         // no separator line (Safari/Xcode-style header).
         window.titlebarAppearsTransparent = true
@@ -52,7 +54,15 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window.titlebarSeparatorStyle = .none
         super.init(window: window)
         window.delegate = self
-        window.center()
+        // Restore the saved position when one exists; only center on the very
+        // first launch. Calling center() unconditionally would override the
+        // saved frame on every launch.
+        let autosaveName = "PlainXMainWindow"
+        window.setFrameAutosaveName(autosaveName)
+        let savedFrameKey = "NSWindow Frame \(autosaveName)"
+        if UserDefaults.standard.string(forKey: savedFrameKey) == nil {
+            window.center()
+        }
 
         setupLayout()
         updateTabStrip()
