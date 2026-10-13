@@ -22,6 +22,10 @@ final class DiffWindowController: NSWindowController {
     private var currentHunkIndex = -1
     private var isSyncingScroll = false
     private var ignoreWhitespace: Bool
+    private var diffTask: Task<Void, Never>?
+    private var isComputing = false
+    private var pendingLeftText = ""
+    private var pendingRightText = ""
 
     private let summaryLabel = NSTextField(labelWithString: "")
     private var ignoreWhitespaceButton: NSButton!
@@ -37,7 +41,9 @@ final class DiffWindowController: NSWindowController {
          coordinator: AppCoordinator) {
         self.coordinator = coordinator
         self.ignoreWhitespace = false
-        self.result = DiffService.diff(left: leftText, right: rightText, options: .init(ignoreWhitespace: false))
+        self.result = DiffResult(hunks: [], leftLineKinds: [], rightLineKinds: [])
+        self.pendingLeftText = leftText
+        self.pendingRightText = rightText
         let theme = coordinator.preferences.resolvedTheme(appearance: nil)
         self.leftPane = EditorPaneController(theme: theme)
         self.rightPane = EditorPaneController(theme: theme)
@@ -52,7 +58,30 @@ final class DiffWindowController: NSWindowController {
         super.init(window: window)
 
         setupUI(leftTitle: leftTitle, rightTitle: rightTitle)
-        loadAndMark(leftText: leftText, rightText: rightText)
+        // Load the panes immediately; the diff itself is computed in the
+        // background so tens-of-megabytes comparisons never freeze the UI.
+        loadPanes(leftText: leftText, rightText: rightText)
+        recomputeDiff()
+    }
+
+    /// Computes the diff on a background task and applies markers when done.
+    private func recomputeDiff() {
+        diffTask?.cancel()
+        isComputing = true
+        summaryLabel.stringValue = "Computing diff\u{2026}"
+        let left = pendingLeftText
+        let right = pendingRightText
+        let options = DiffService.Options(ignoreWhitespace: ignoreWhitespace)
+        diffTask = Task.detached(priority: .userInitiated) { [weak self] in
+            let computed = DiffService.diff(left: left, right: right, options: options)
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.result = computed
+                self.isComputing = false
+                self.currentHunkIndex = -1
+                self.applyMarkers()
+            }
+        }
     }
 
     @available(*, unavailable)
@@ -140,6 +169,7 @@ final class DiffWindowController: NSWindowController {
     }
 
     deinit {
+        diffTask?.cancel()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -160,7 +190,7 @@ final class DiffWindowController: NSWindowController {
         return container
     }
 
-    private func loadAndMark(leftText: String, rightText: String) {
+    private func loadPanes(leftText: String, rightText: String) {
         let language = LanguageRegistry.plainText
         leftPane.facade.setLanguage(language)
         rightPane.facade.setLanguage(language)
@@ -168,7 +198,6 @@ final class DiffWindowController: NSWindowController {
         rightPane.facade.text = rightText
         leftPane.facade.setReadOnly(true)
         rightPane.facade.setReadOnly(true)
-        applyMarkers()
     }
 
     private func applyMarkers() {
@@ -208,6 +237,7 @@ final class DiffWindowController: NSWindowController {
     }
 
     private func updateSummary() {
+        guard !isComputing else { return }
         let hunks = result.hunks.count
         summaryLabel.stringValue = hunks == 0
             ? "Files are identical"
@@ -215,13 +245,13 @@ final class DiffWindowController: NSWindowController {
     }
 
     @objc private func nextChange() {
-        guard !result.hunks.isEmpty else { return }
+        guard !isComputing, !result.hunks.isEmpty else { return }
         currentHunkIndex = (currentHunkIndex + 1) % result.hunks.count
         scrollToCurrentHunk()
     }
 
     @objc private func previousChange() {
-        guard !result.hunks.isEmpty else { return }
+        guard !isComputing, !result.hunks.isEmpty else { return }
         currentHunkIndex = currentHunkIndex <= 0 ? result.hunks.count - 1 : currentHunkIndex - 1
         scrollToCurrentHunk()
     }
@@ -241,10 +271,9 @@ final class DiffWindowController: NSWindowController {
 
     @objc private func toggleIgnoreWhitespace() {
         ignoreWhitespace = ignoreWhitespaceButton.state == .on
-        result = DiffService.diff(left: leftPane.facade.text, right: rightPane.facade.text,
-                                  options: .init(ignoreWhitespace: ignoreWhitespace))
-        currentHunkIndex = -1
-        applyMarkers()
+        pendingLeftText = leftPane.facade.text
+        pendingRightText = rightPane.facade.text
+        recomputeDiff()
     }
 
     @objc private func leftScrolled() {

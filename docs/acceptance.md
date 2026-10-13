@@ -19,7 +19,7 @@ evidence used to verify it.
 | Undo/redo works across normal editing commands | Pass | Scintilla save points + `ScintillaSmokeTests.testUndoRedo`; all transforms wrap edit groups in `BEGIN/ENDUNDOACTION` |
 | Multi-cursor and rectangular editing work | Pass | `facade.configureMultipleSelection` + `selectAllOccurrences` tests; column mode via `SCVS_RECTANGULARSELECTION` |
 | Line operations behave correctly with/without selections | Pass | `TransformTests` (sort/dedupe/reverse/join/trim, numeric-aware sort) |
-| Split view and cloned document views stay synchronized | Pass | `DocumentTabController` mirrors `SCN_MODIFIED` insert/delete ranges between panes |
+| Split view and cloned document views stay synchronized | Pass | `DocumentTabController` mirrors `SCN_MODIFIED` insert/delete ranges between panes; side-by-side and stacked orientations; split state persists in sessions |
 
 ## Search
 
@@ -94,6 +94,22 @@ evidence used to verify it.
 | `PlainX.app` Universal 2 | 8.7 MB | ≤ 80 MB |
 | `PlainX-Editor-v1.0.0-universal.dmg` | 4.0 MB | ≤ 40 MB |
 
+## Audit follow-up (2026-10-13)
+
+A code-level audit against the feature matrix found and closed the following
+gaps after the first acceptance pass:
+
+| Gap | Resolution |
+|---|---|
+| Tab drag-reorder was plumbed but not implemented | Tabs can be dragged to reorder (live reorder during drag) |
+| Reload from disk only existed as a banner action | File → Reload from Disk (⌘R) for both the editor and the Large File viewer |
+| Only side-by-side splitting existed | View → Split View Horizontally (⌥⌘H) added; orientation is saved/restored |
+| Diff computed on the main thread | Diff now computes on a background task with a "Computing diff…" state; navigation is disabled until ready |
+| Session restore only restored the first pane | All panes and the split orientation are saved and restored |
+| Auto-indent was only Scintilla's indentation maintenance | Basic lexer-aware smart indent: Return after `{`/`(`/`[` indents one level, ignored inside comments/strings (tested) |
+| No hostile-input decoding coverage | Deterministic fuzz-style tests: 300 random-byte inputs, truncated multi-byte sequences at every cut point |
+| No leak pass recorded | `leaks` pass: all reported leaks are in Apple's `linkd` XPC connection (20 KB); none in PlainX code |
+
 ## Known limitations (intentionally deferred, documented)
 
 1. **UI tests** are provided (`PlainXUITests`) but skipped by default in the
@@ -108,6 +124,13 @@ evidence used to verify it.
    the measured cause and mitigation paths.
 5. **Intra-line diff highlighting** and **text (not line) selection in Large
    File Mode** are future enhancements; the v1.0 behavior is documented.
+6. **V1+ items not built**: regex playground, user theme files, an
+   auto-updater (Help → Check for Updates opens the releases page), and the
+   `plainx` CLI.
+7. **README screenshot/GIF** is still missing (needs a machine with screen
+   recording permission to capture the running app).
+8. **24-hour log-follow soak test** was not run; the follow/tail paths are
+   covered by automated append/rotation tests instead.
 
 ## Final statement
 

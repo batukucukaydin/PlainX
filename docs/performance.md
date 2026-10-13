@@ -98,6 +98,22 @@ Both are comfortably inside budget: the app bundles only Scintilla/Lexilla
 (curated lexer set), the compiled Swift code, and asset catalogs. The DMG
 contains the app plus an `/Applications` symlink.
 
+## Leak pass
+
+Run with a 100 MB file open in Large File Mode and ~12 s of idle time
+(`leaks <pid>` on the Release build):
+
+```
+Process: 104,926 nodes malloced for 12,371 KB
+417 leaks for 20,016 total leaked bytes
+```
+
+All 417 reported leaks (20 KB) are root cycles inside Apple's
+`com.apple.linkd.autoShortcut` XPC connection (the same daemon that logs
+"connection to service named com.apple.linkd.autoShortcut" at launch). No
+leaks were attributed to PlainX's own code. This is re-checked each release
+with `Scripts/benchmark.sh` plus a manual `leaks` run.
+
 ## Methodology notes
 
 - "Open/RSS" is sampled in-process immediately after the tab is ready;

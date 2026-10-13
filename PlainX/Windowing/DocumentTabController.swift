@@ -32,6 +32,7 @@ final class DocumentTabController: NSObject, EditorPaneControllerDelegate, Docum
 
     private(set) var panes: [EditorPaneController] = []
     private(set) var activePaneIndex: Int = 0
+    private(set) var splitOrientation: SplitOrientation = .vertical
     private var isSyncing = false
 
     /// Root view for the tab: optional find bar stacked above the pane area.
@@ -252,6 +253,7 @@ final class DocumentTabController: NSObject, EditorPaneControllerDelegate, Docum
         }
         panes.append(second)
 
+        splitOrientation = orientation
         let split = NSSplitView()
         // Vertical orientation places panes side by side; horizontal stacks them.
         split.isVertical = (orientation == .vertical)
@@ -279,6 +281,7 @@ final class DocumentTabController: NSObject, EditorPaneControllerDelegate, Docum
         }
         panes = [keep]
         activePaneIndex = 0
+        splitOrientation = .vertical
         drop?.view.removeFromSuperview()
         if let pane = panes.first {
             rootStack.insertArrangedSubview(pane.view, at: 0)
@@ -335,6 +338,48 @@ final class DocumentTabController: NSObject, EditorPaneControllerDelegate, Docum
 
     func editorPaneDidTypeCharacter(_ pane: EditorPaneController, byte: UInt8) {
         controller.coordinator.macroEngine.recordTypedByte(byte, tab: self)
+        if byte == 0x0A {
+            applySmartIndent(to: pane)
+        }
+    }
+
+    /// Basic lexer-aware auto-indent: after pressing Return on a line that
+    /// ends with an opening bracket, indent one extra level. The opener must
+    /// not be inside a comment or string according to the language's style map.
+    func applySmartIndent(to pane: EditorPaneController) {
+        let facade = pane.facade
+        let line = facade.line(from: facade.currentPosition)
+        guard line > 0 else { return }
+        let previousLine = line - 1
+        var position = facade.lineEnd(previousLine) - 1
+        let lineStart = facade.lineStart(previousLine)
+        while position > lineStart {
+            let byte = facade.character(at: position)
+            if byte == 0x20 || byte == 0x09 || byte == 0x0A || byte == 0x0D {
+                position -= 1
+            } else {
+                break
+            }
+        }
+        guard position > lineStart || position == lineStart else { return }
+        let opener = facade.character(at: position)
+        guard opener == 0x7B || opener == 0x28 || opener == 0x5B else { return } // { ( [
+
+        // Ignore openers inside comments or strings.
+        let style = facade.send(SCI_GETSTYLEAT, w: position)
+        let language = document.language
+        if let semantic = language.styleMap[style] {
+            switch semantic {
+            case .comment, .docComment, .string, .character:
+                return
+            default:
+                break
+            }
+        }
+
+        let previousIndent = facade.send(SCI_GETLINEINDENTATION, w: previousLine)
+        let indentWidth = Preferences.shared.tabWidth
+        facade.send(SCI_SETLINEINDENTATION, w: line, l: previousIndent + indentWidth)
     }
 
     func editorPane(_ pane: EditorPaneController, didToggleBookmarkOn line: Int) {

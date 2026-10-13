@@ -34,6 +34,8 @@ struct SessionTab: Codable {
     var wordWrapOverride: Bool?
     var bookmarks: [Int]
     var views: [SessionView]
+    /// "vertical" (side by side) or "horizontal" (stacked); nil when unsplit.
+    var splitOrientation: String?
 }
 
 struct SessionView: Codable {
@@ -86,6 +88,10 @@ final class SessionStore {
                                        firstVisibleLine: state.firstVisibleLine,
                                        xOffset: state.xOffset)
                 } ?? []
+                var splitOrientation: String?
+                if let editorTab = tab as? DocumentTabController, editorTab.isSplit {
+                    splitOrientation = editorTab.splitOrientation == .horizontal ? "horizontal" : "vertical"
+                }
                 let sessionTab = SessionTab(
                     urlPath: document.url?.path,
                     untitledName: document.isUntitled ? document.untitledName : nil,
@@ -96,7 +102,8 @@ final class SessionStore {
                     isPinned: document.isPinned,
                     wordWrapOverride: document.wordWrapOverride,
                     bookmarks: document.bookmarks.sorted(),
-                    views: views
+                    views: views,
+                    splitOrientation: splitOrientation
                 )
                 tabs.append(sessionTab)
             }
@@ -137,7 +144,14 @@ final class SessionStore {
                 if let document = makeDocument(from: tabSession, into: coordinator) {
                     window.addTab(for: document, select: false)
                     if let editorTab = window.tabs.last as? DocumentTabController {
-                        apply(viewState: tabSession.views.first, to: editorTab.activePane)
+                        if tabSession.views.count > 1 {
+                            let orientation: SplitOrientation =
+                                tabSession.splitOrientation == "horizontal" ? .horizontal : .vertical
+                            editorTab.splitIntoSecondPane(orientation: orientation)
+                        }
+                        for (index, view) in tabSession.views.enumerated() where index < editorTab.panes.count {
+                            apply(viewState: view, to: editorTab.panes[index])
+                        }
                     }
                     didAddTab = true
                 }

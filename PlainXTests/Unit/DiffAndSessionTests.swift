@@ -240,3 +240,90 @@ final class MacroEngineTests: XCTestCase {
         try TestHelpers.remove(directory)
     }
 }
+
+final class SplitSessionTests: XCTestCase {
+
+    func testSplitStateIsSavedAndRestored() throws {
+        let directory = try TestHelpers.makeTemporaryDirectory()
+        let fileURL = directory.appendingPathComponent("split-target.txt")
+        try Data("alpha\nbeta\ngamma\n".utf8).write(to: fileURL)
+        let sessionFile = directory.appendingPathComponent("Session.json")
+
+        // Build a window with a split, horizontally arranged tab.
+        let coordinator = AppCoordinator()
+        let window = coordinator.newWindow()
+        let document = try coordinator.openDocument(at: fileURL)
+        window.addTab(for: document, select: true)
+        let editorTab = try XCTUnwrap(window.activeTab as? DocumentTabController)
+        editorTab.splitIntoSecondPane(orientation: .horizontal)
+        XCTAssertTrue(editorTab.isSplit)
+
+        let store = SessionStore(fileURL: sessionFile)
+        try store.save(from: coordinator)
+        window.forceCloseWindow()
+
+        // Restore into a fresh coordinator.
+        let restoredCoordinator = AppCoordinator()
+        let restoredAny = try SessionStore(fileURL: sessionFile).restore(into: restoredCoordinator)
+        XCTAssertTrue(restoredAny)
+        let restoredWindow = try XCTUnwrap(restoredCoordinator.windows.first)
+        let restoredTab = try XCTUnwrap(restoredWindow.tabs.first as? DocumentTabController)
+        XCTAssertTrue(restoredTab.isSplit, "split state must be restored")
+        XCTAssertEqual(restoredTab.splitOrientation, .horizontal)
+        XCTAssertEqual(restoredTab.panes.count, 2)
+        restoredWindow.forceCloseWindow()
+        try TestHelpers.remove(directory)
+    }
+}
+
+final class DecodingFuzzTests: XCTestCase {
+
+    /// Deterministic pseudo-random generator so failures are reproducible.
+    private struct SeededGenerator: RandomNumberGenerator {
+        var state: UInt64
+        init(seed: UInt64) { state = seed &* 6364136223846793005 &+ 1442695040888963407 }
+        mutating func next() -> UInt64 {
+            state = state &* 6364136223846793005 &+ 1442695040888963407
+            return state
+        }
+    }
+
+    func testRandomBytesNeverCrashDecoding() {
+        var generator = SeededGenerator(seed: 42)
+        for iteration in 0..<300 {
+            let length = Int.random(in: 0...4096, using: &generator)
+            var data = Data()
+            data.reserveCapacity(length)
+            for _ in 0..<length {
+                data.append(UInt8.random(in: 0...255, using: &generator))
+            }
+            let detection = EncodingDetector.detect(data: data)
+            XCTAssertFalse(detection.encoding.identifier.isEmpty, "iteration \(iteration)")
+            let (text, result) = FileLoader.decode(data: data)
+            _ = text
+            _ = result
+            _ = EOLMode.detect(in: data)
+        }
+    }
+
+    func testTruncatedMultibyteSequencesAtEveryCut() {
+        let source = "Aé€𝄞Z" // 1 + 2 + 3 + 4 + 1 bytes
+        let full = Data(source.utf8)
+        for cut in 0...full.count {
+            let truncated = full.prefix(cut)
+            let (text, result) = FileLoader.decode(data: Data(truncated))
+            XCTAssertFalse(result.encoding.identifier.isEmpty, "cut \(cut)")
+            if cut > 0 {
+                XCTAssertFalse(text.isEmpty, "cut \(cut) should decode something")
+            }
+        }
+    }
+
+    func testInvalidSequencesAreReportedNotSilent() {
+        // Lone continuation bytes.
+        let data = Data([0x41, 0x80, 0x80, 0x42])
+        let detection = EncodingDetector.detect(data: data)
+        XCTAssertNotEqual(detection.encoding.identifier, "utf-8",
+                          "invalid UTF-8 must not be reported as UTF-8")
+    }
+}
