@@ -669,6 +669,27 @@ final class ScintillaFacade: NSObject, ScintillaNotificationProtocol {
         send(SCI_GETLEXER)
     }
 
+    // MARK: - Word autocompletion (Scintilla popup)
+
+    var isAutoCompletionActive: Bool { send(SCI_AUTOCACTIVE) != 0 }
+
+    /// Shows the autocompletion popup with a space-separated word list.
+    /// Scintilla lists cannot contain words with spaces; identifiers qualify.
+    func showAutoCompletion(prefixLength: Int, words: [String]) {
+        guard !words.isEmpty else {
+            cancelAutoCompletion()
+            return
+        }
+        send(SCI_AUTOCSETIGNORECASE, w: 1)
+        send(SCI_AUTOCSETMAXHEIGHT, w: 12)
+        send(SCI_AUTOCSETSEPARATOR, w: Int(0x20))
+        _ = send(SCI_AUTOCSHOW, w: prefixLength, string: words.joined(separator: " "))
+    }
+
+    func cancelAutoCompletion() {
+        send(SCI_AUTOCCANCEL)
+    }
+
     // MARK: - Styles and theme application
 
     func applyFont(name: String, size: CGFloat) {

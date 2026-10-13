@@ -37,6 +37,12 @@ final class EditorPaneController: NSViewController, ScintillaFacadeDelegate {
     private var currentLanguage: LanguageDefinition = LanguageRegistry.plainText
     private var preferences: Preferences { .shared }
 
+    /// Cached document words for autocompletion; rebuilt periodically rather
+    /// than on every keystroke.
+    private var completionWordCache: [String] = []
+    private var modificationsSinceCacheBuild = 0
+    private var completionCacheIsStale = true
+
     init(theme: EditorTheme) {
         self.currentTheme = theme
         let scintilla = ScintillaView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
@@ -233,16 +239,104 @@ final class EditorPaneController: NSViewController, ScintillaFacadeDelegate {
         delegate?.editorPaneDidUpdateUI(self)
     }
 
-    func scintillaDidChangeContent(_ facade: ScintillaFacade, modification: ScintillaModification) {
-        delegate?.editorPane(self, didApply: modification)
-    }
-
     func scintillaDidChangeDirtyState(_ facade: ScintillaFacade, isDirty: Bool) {
         delegate?.editorPaneDidChangeDirtyState(self)
     }
 
     func scintillaDidTypeCharacter(_ facade: ScintillaFacade, byte: UInt8) {
+        if preferences.autoCompletion {
+            maybeShowWordCompletion(typedByte: byte)
+        }
         delegate?.editorPaneDidTypeCharacter(self, byte: byte)
+    }
+
+    func scintillaDidChangeContent(_ facade: ScintillaFacade, modification: ScintillaModification) {
+        if modification.isInsertText || modification.isDeleteText {
+            // Saturating counter: never overflow, only marks the cache stale.
+            modificationsSinceCacheBuild = min(modificationsSinceCacheBuild + 1, 10_000)
+        }
+        delegate?.editorPane(self, didApply: modification)
+    }
+
+    // MARK: - Word autocompletion
+
+    private func maybeShowWordCompletion(typedByte: UInt8) {
+        // Only after identifier characters (ASCII letters, digits, underscore).
+        let isIdentifierByte = (typedByte >= 0x30 && typedByte <= 0x39)
+            || (typedByte >= 0x41 && typedByte <= 0x5A)
+            || (typedByte >= 0x61 && typedByte <= 0x7A)
+            || typedByte == 0x5F
+        guard isIdentifierByte else { return }
+        guard facade.length < 4 * 1024 * 1024 else { return }
+        guard !facade.isAutoCompletionActive else { return }
+
+        let caret = facade.currentPosition
+        // Skip inside comments and strings.
+        let style = facade.send(SCI_GETSTYLEAT, w: max(0, caret - 1))
+        if let semantic = currentLanguage.styleMap[style] {
+            switch semantic {
+            case .comment, .docComment, .string, .character:
+                return
+            default:
+                break
+            }
+        }
+
+        let prefix = currentWordPrefix()
+        guard prefix.count >= 2 else { return }
+
+        if completionCacheIsStale || modificationsSinceCacheBuild > 40 || completionWordCache.isEmpty {
+            completionWordCache = Self.collectWords(from: facade, limit: 1500)
+            modificationsSinceCacheBuild = 0
+            completionCacheIsStale = false
+        }
+        let lowerPrefix = prefix.lowercased()
+        let matches = completionWordCache.filter {
+            $0.count > prefix.count && $0.lowercased().hasPrefix(lowerPrefix)
+        }
+        guard !matches.isEmpty else { return }
+        facade.showAutoCompletion(prefixLength: prefix.utf8.count, words: Array(matches.prefix(300)))
+    }
+
+    func currentWordPrefix() -> String {
+        var position = facade.currentPosition
+        var bytes: [UInt8] = []
+        while position > 0, bytes.count < 64 {
+            let byte = facade.character(at: position - 1)
+            let isIdentifierByte = (byte >= 0x30 && byte <= 0x39)
+                || (byte >= 0x41 && byte <= 0x5A)
+                || (byte >= 0x61 && byte <= 0x7A)
+                || byte == 0x5F
+            guard isIdentifierByte else { break }
+            bytes.append(byte)
+            position -= 1
+        }
+        return String(decoding: bytes.reversed(), as: UTF8.self)
+    }
+
+    static func collectWords(from facade: ScintillaFacade, limit: Int) -> [String] {
+        let text = facade.text
+        var words = Set<String>()
+        var current = ""
+        current.reserveCapacity(32)
+        for character in text {
+            if character.isLetter || character.isNumber || character == "_" {
+                current.append(character)
+                if current.count > 64 {
+                    current.removeFirst()
+                }
+            } else {
+                if current.count >= 3 {
+                    words.insert(current)
+                    if words.count >= limit { break }
+                }
+                current = ""
+            }
+        }
+        if current.count >= 3, words.count < limit {
+            words.insert(current)
+        }
+        return Array(words)
     }
 
     func scintillaMarginClicked(_ facade: ScintillaFacade, margin: Int, modifiers: NSEvent.ModifierFlags, position: Int) {

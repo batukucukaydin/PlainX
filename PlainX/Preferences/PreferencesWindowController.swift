@@ -52,6 +52,7 @@ final class PreferencesWindowController: NSWindowController {
     private var indentGuidesCheckbox: NSButton!
     private var currentLineCheckbox: NSButton!
     private var wrapCheckbox: NSButton!
+    private var autoCompletionCheckbox: NSButton!
     private var tabWidthPopup: NSPopUpButton!
     private var useTabsCheckbox: NSButton!
     private var sessionCheckbox: NSButton!
@@ -185,6 +186,7 @@ final class PreferencesWindowController: NSWindowController {
         indentGuidesCheckbox = checkbox("Show indent guides", value: false, action: #selector(editorTogglesChanged))
         currentLineCheckbox = checkbox("Highlight current line", value: true, action: #selector(editorTogglesChanged))
         wrapCheckbox = checkbox("Wrap long lines by default", value: false, action: #selector(editorTogglesChanged))
+        autoCompletionCheckbox = checkbox("Suggest words while typing", value: true, action: #selector(editorTogglesChanged))
         useTabsCheckbox = checkbox("Indent using tabs", value: false, action: #selector(editorTogglesChanged))
 
         tabWidthPopup = NSPopUpButton()
@@ -202,6 +204,7 @@ final class PreferencesWindowController: NSWindowController {
             useTabsCheckbox,
             lineNumbersCheckbox,
             wrapCheckbox,
+            autoCompletionCheckbox,
             whitespaceCheckbox,
             eolCheckbox,
             indentGuidesCheckbox,
@@ -312,6 +315,7 @@ final class PreferencesWindowController: NSWindowController {
         indentGuidesCheckbox.state = preferences.showIndentGuides ? .on : .off
         currentLineCheckbox.state = preferences.highlightCurrentLine ? .on : .off
         wrapCheckbox.state = preferences.wordWrapDefault ? .on : .off
+        autoCompletionCheckbox.state = preferences.autoCompletion ? .on : .off
         useTabsCheckbox.state = preferences.useTabs ? .on : .off
         tabWidthPopup.selectItem(withTitle: "\(preferences.tabWidth)")
 
@@ -385,6 +389,7 @@ final class PreferencesWindowController: NSWindowController {
         preferences.showIndentGuides = indentGuidesCheckbox.state == .on
         preferences.highlightCurrentLine = currentLineCheckbox.state == .on
         preferences.wordWrapDefault = wrapCheckbox.state == .on
+        preferences.autoCompletion = autoCompletionCheckbox.state == .on
         preferences.useTabs = useTabsCheckbox.state == .on
         if let width = Int(tabWidthPopup.titleOfSelectedItem ?? "4") {
             preferences.tabWidth = width

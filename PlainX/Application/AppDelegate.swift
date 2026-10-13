@@ -10,6 +10,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var coordinator: AppCoordinator!
     private var dispatcher: CommandDispatcher!
     private var pendingOpenURLs: [URL] = []
+    /// Paths passed on the command line (see main.swift).
+    var commandLineURLs: [URL] = []
 
     static var benchmarkStart: CFAbsoluteTime { plainXProcessStartTime }
     static var isBenchmarkMode: Bool {
@@ -43,6 +45,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             return
         }
+        pendingOpenURLs.insert(contentsOf: commandLineURLs, at: 0)
+        commandLineURLs.removeAll()
         if Self.isBenchmarkMode {
             // Benchmarks always start from a clean, predictable state.
             let window = coordinator.newWindow()

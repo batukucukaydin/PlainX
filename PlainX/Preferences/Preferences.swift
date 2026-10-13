@@ -55,6 +55,7 @@ final class Preferences {
         static let wordWrapDefault = "editor.wordWrapDefault"
         static let tabWidth = "editor.tabWidth"
         static let useTabs = "editor.useTabs"
+        static let autoCompletion = "editor.autoCompletion"
         static let trimTrailingWhitespaceOnSave = "files.trimTrailingWhitespaceOnSave"
         static let ensureFinalNewlineOnSave = "files.ensureFinalNewlineOnSave"
         static let defaultEOL = "files.defaultEOL"
@@ -93,6 +94,7 @@ final class Preferences {
             Key.wordWrapDefault: false,
             Key.tabWidth: 4,
             Key.useTabs: false,
+            Key.autoCompletion: true,
             Key.trimTrailingWhitespaceOnSave: false,
             Key.ensureFinalNewlineOnSave: false,
             Key.defaultEOL: EOLMode.lf.rawValue,
@@ -184,6 +186,12 @@ final class Preferences {
     var useTabs: Bool {
         get { defaults.bool(forKey: Key.useTabs) }
         set { defaults.set(newValue, forKey: Key.useTabs); notifyChange() }
+    }
+
+    /// Show word-completion suggestions while typing (Notepad++-style).
+    var autoCompletion: Bool {
+        get { defaults.bool(forKey: Key.autoCompletion) }
+        set { defaults.set(newValue, forKey: Key.autoCompletion); notifyChange() }
     }
 
     // MARK: - Files

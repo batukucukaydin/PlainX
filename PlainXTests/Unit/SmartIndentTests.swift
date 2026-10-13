@@ -88,3 +88,56 @@ final class SmartIndentTests: XCTestCase {
         window.forceCloseWindow()
     }
 }
+
+final class WordCompletionTriggerTests: XCTestCase {
+
+    private func makePane(text: String) -> (AppCoordinator, MainWindowController, EditorPaneController) {
+        let coordinator = AppCoordinator()
+        let window = coordinator.newWindow()
+        let document = PlainXDocument(url: nil)
+        window.addTab(for: document, select: true)
+        guard let tab = window.activeTab as? DocumentTabController else {
+            fatalError("expected editor tab")
+        }
+        let pane = tab.activePane
+        pane.facade.text = text
+        return (coordinator, window, pane)
+    }
+
+    func testPrefixExtraction() {
+        let (coordinator, window, pane) = makePane(text: "alpha beta\nconfig")
+        pane.facade.gotoPosition(pane.facade.length)
+        XCTAssertEqual(pane.currentWordPrefix(), "config")
+        pane.facade.insert(text: " ", at: pane.facade.length)
+        pane.facade.gotoPosition(pane.facade.length)
+        XCTAssertEqual(pane.currentWordPrefix(), "")
+        _ = coordinator
+        window.forceCloseWindow()
+    }
+
+    func testWordCollectionFindsIdentifiers() {
+        let (coordinator, window, pane) = makePane(
+            text: "configuration configurate config con x yy\n")
+        let words = EditorPaneController.collectWords(from: pane.facade, limit: 100)
+        XCTAssertTrue(words.contains("configuration"))
+        XCTAssertTrue(words.contains("configurate"))
+        XCTAssertTrue(words.contains("config"))
+        XCTAssertTrue(words.contains("con"), "3-character words qualify")
+        XCTAssertFalse(words.contains("x"), "single-character words are ignored")
+        XCTAssertFalse(words.contains("yy"), "2-character words are ignored")
+        _ = coordinator
+        window.forceCloseWindow()
+    }
+
+    func testTypingDoesNotCrashAndKeepsPopupContract() {
+        // In a headless test host the popup itself may not become visible, but
+        // the trigger path must run safely and the cancel call must be valid.
+        let (coordinator, window, pane) = makePane(text: "configuration configurate config\ncon")
+        pane.facade.gotoPosition(pane.facade.length)
+        pane.scintillaDidTypeCharacter(pane.facade, byte: UInt8(ascii: "f"))
+        pane.facade.cancelAutoCompletion()
+        XCTAssertFalse(pane.facade.isAutoCompletionActive)
+        _ = coordinator
+        window.forceCloseWindow()
+    }
+}

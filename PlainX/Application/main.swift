@@ -14,6 +14,15 @@ let plainXProcessStartTime = CFAbsoluteTimeGetCurrent()
 
 let plainXApplication = NSApplication.shared
 let plainXDelegate = AppDelegate()
+
+// `plainx file.txt` / `PlainX.app/Contents/MacOS/PlainX file.txt`:
+// command-line paths are opened once the app finishes launching.
+plainXDelegate.commandLineURLs = CommandLine.arguments.dropFirst().compactMap { argument in
+    guard !argument.hasPrefix("-") else { return nil }
+    let url = URL(fileURLWithPath: (argument as NSString).expandingTildeInPath)
+    return FileManager.default.fileExists(atPath: url.path) ? url : nil
+}
+
 plainXApplication.delegate = plainXDelegate
 plainXApplication.setActivationPolicy(.regular)
 plainXApplication.run()
