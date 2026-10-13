@@ -14,6 +14,8 @@ protocol DocumentTab: AnyObject {
     var tabContentView: NSView { get }
     var isSplit: Bool { get }
     var isLargeFileViewer: Bool { get }
+    /// The Welcome screen shown on first launch and when the last tab closes.
+    var isWelcome: Bool { get }
     /// State snapshot for the window status bar.
     func statusSnapshot() -> StatusBarView.State
     func saveViewStates()
@@ -22,6 +24,10 @@ protocol DocumentTab: AnyObject {
     func focusContent()
     /// Receives change notifications routed to the owning window.
     var tabDelegate: DocumentTabControllerDelegate? { get set }
+}
+
+extension DocumentTab {
+    var isWelcome: Bool { false }
 }
 
 /// Large File Mode tab: owns a read-only viewer for one huge file.

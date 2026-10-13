@@ -36,10 +36,12 @@ final class TabStripView: NSView {
     private(set) var items: [TabItem] = []
     var selectedID: UUID?
 
-    private let scrollView = NSScrollView()
+    private let scrollView = PXTabScrollView()
     private let stackView = NSStackView()
     private let newTabButton = NSButton()
     private var itemViews: [UUID: TabItemView] = [:]
+    /// Leading inset that keeps tabs clear of the window traffic lights.
+    private var leadingInsetConstraint: NSLayoutConstraint?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -64,7 +66,7 @@ final class TabStripView: NSView {
 
         stackView.orientation = .horizontal
         stackView.alignment = .centerY
-        stackView.spacing = 0
+        stackView.spacing = 2
         stackView.edgeInsets = NSEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)
         scrollView.documentView = stackView
 
@@ -80,18 +82,28 @@ final class TabStripView: NSView {
         addSubview(scrollView)
         addSubview(newTabButton)
 
+        let leadingInset = scrollView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 78)
+        leadingInsetConstraint = leadingInset
         NSLayoutConstraint.activate([
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scrollView.topAnchor.constraint(equalTo: topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            newTabButton.leadingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: 2),
-            newTabButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -6),
+            leadingInset,
+            scrollView.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4),
+            newTabButton.leadingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: 4),
+            newTabButton.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
             newTabButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             newTabButton.widthAnchor.constraint(equalToConstant: 24),
             newTabButton.heightAnchor.constraint(equalToConstant: 22),
-            heightAnchor.constraint(equalToConstant: 30),
+            heightAnchor.constraint(equalToConstant: 34),
         ])
     }
+
+    /// Space reserved for the traffic lights while the tabs sit in the
+    /// titlebar band; collapses when the window is full screen.
+    func setTrafficLightInset(_ inset: CGFloat) {
+        leadingInsetConstraint?.constant = inset
+    }
+
+    override var mouseDownCanMoveWindow: Bool { true }
 
     func update(items: [TabItem], selectedID: UUID?) {
         self.items = items
@@ -200,6 +212,8 @@ final class TabItemView: NSView {
     private let dirtyDot = NSView()
     private let pinImage = NSImageView()
     private let closeButton = NSButton()
+    private let accentBar = NSView()
+    private var isHovered = false
     private var isSelected = false
     private var dragStartIndex: Int?
 
@@ -219,8 +233,9 @@ final class TabItemView: NSView {
 
     private func setup() {
         wantsLayer = true
-        layer?.cornerRadius = 5
+        layer?.cornerRadius = 6
         layer?.borderWidth = 1
+        layer?.borderColor = NSColor.clear.cgColor
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .regular)
@@ -245,13 +260,24 @@ final class TabItemView: NSView {
         closeButton.target = self
         closeButton.action = #selector(handleClose)
 
+        accentBar.translatesAutoresizingMaskIntoConstraints = false
+        accentBar.wantsLayer = true
+        accentBar.layer?.cornerRadius = 1
+        accentBar.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+        accentBar.isHidden = true
+
         addSubview(titleLabel)
         addSubview(dirtyDot)
         addSubview(pinImage)
         addSubview(closeButton)
+        addSubview(accentBar)
 
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: 26),
+            accentBar.heightAnchor.constraint(equalToConstant: 2),
+            accentBar.bottomAnchor.constraint(equalTo: bottomAnchor),
+            accentBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            accentBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             widthAnchor.constraint(greaterThanOrEqualToConstant: Self.minWidth),
             widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxWidth),
 
@@ -281,25 +307,26 @@ final class TabItemView: NSView {
     func update(item: TabStripView.TabItem, isSelected: Bool) {
         self.isSelected = isSelected
         titleLabel.stringValue = item.title
+        titleLabel.font = NSFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
         titleLabel.textColor = isSelected ? .labelColor : .secondaryLabelColor
         dirtyDot.isHidden = !item.isDirty
         pinImage.isHidden = !item.isPinned
         closeButton.isHidden = !isSelected && !item.isDirty
         toolTip = item.tooltip
+        accentBar.isHidden = !isSelected
 
-        // Bookmark dot / external change tint
         if item.hasExternalChange {
             layer?.borderColor = NSColor.systemOrange.cgColor
-            layer?.backgroundColor = isSelected
-                ? NSColor.controlBackgroundColor.cgColor
-                : NSColor.systemOrange.withAlphaComponent(0.12).cgColor
+            layer?.backgroundColor = NSColor.systemOrange.withAlphaComponent(isSelected ? 0.18 : 0.10).cgColor
+        } else if isSelected {
+            layer?.borderColor = NSColor.separatorColor.cgColor
+            layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+        } else if isHovered {
+            layer?.borderColor = NSColor.clear.cgColor
+            layer?.backgroundColor = NSColor.quaternaryLabelColor.withAlphaComponent(0.35).cgColor
         } else {
-            layer?.borderColor = isSelected
-                ? NSColor.separatorColor.cgColor
-                : NSColor.clear.cgColor
-            layer?.backgroundColor = isSelected
-                ? NSColor.controlBackgroundColor.cgColor
-                : NSColor.clear.cgColor
+            layer?.borderColor = NSColor.clear.cgColor
+            layer?.backgroundColor = NSColor.clear.cgColor
         }
     }
 
@@ -404,14 +431,34 @@ final class TabItemView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
+        isHovered = true
         closeButton.isHidden = false
+        refreshBackground()
     }
 
     override func mouseExited(with event: NSEvent) {
+        isHovered = false
         refreshCloseButtonVisibility()
+        refreshBackground()
+    }
+
+    private func refreshBackground() {
+        guard !isSelected else { return }
+        if isHovered {
+            layer?.backgroundColor = NSColor.quaternaryLabelColor.withAlphaComponent(0.35).cgColor
+        } else {
+            layer?.backgroundColor = NSColor.clear.cgColor
+        }
     }
 
     private func refreshCloseButtonVisibility() {
         closeButton.isHidden = !isSelected && dirtyDot.isHidden
     }
+}
+
+
+/// Scroll view used by the tab strip: clicks on empty tab-bar space drag the
+/// window (the strip lives in the titlebar band), clicks on tabs do not.
+final class PXTabScrollView: NSScrollView {
+    override var mouseDownCanMoveWindow: Bool { true }
 }

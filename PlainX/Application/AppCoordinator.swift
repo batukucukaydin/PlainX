@@ -51,10 +51,16 @@ final class AppCoordinator {
         }
     }
 
+    /// Shows the Welcome screen tab (first launch and when the last tab closes).
+    func showWelcome(in window: MainWindowController) {
+        let document = PlainXDocument(url: nil, untitledName: "Welcome")
+        let tab = WelcomeTabController(document: document, coordinator: self, window: window)
+        window.addTab(tab, select: true)
+    }
+
     func windowDidEmpty(_ window: MainWindowController) {
-        // Keep a window alive with a fresh untitled document.
-        let document = makeUntitledDocument()
-        window.addTab(for: document, select: true)
+        // Keep a window alive with the Welcome screen.
+        showWelcome(in: window)
     }
 
     // MARK: - New / open
@@ -854,18 +860,18 @@ final class AppCoordinator {
 
     func restoreSession() {
         guard preferences.sessionRestoreEnabled else {
-            newWindow().addTab(for: makeUntitledDocument(), select: true)
+            showWelcome(in: newWindow())
             return
         }
         do {
             let restored = try sessionStore.restore(into: self)
             if !restored {
-                newWindow().addTab(for: makeUntitledDocument(), select: true)
+                showWelcome(in: newWindow())
             }
         } catch {
             Log.session.error("Session restore failed: \(error.localizedDescription, privacy: .public)")
             sessionRestoreFailed = true
-            newWindow().addTab(for: makeUntitledDocument(), select: true)
+            showWelcome(in: newWindow())
         }
         recoveryStore.restoreUnclaimedSnapshots(into: self)
     }

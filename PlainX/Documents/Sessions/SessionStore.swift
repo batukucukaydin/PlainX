@@ -79,6 +79,7 @@ final class SessionStore {
             let frame = window.window?.frame
             var tabs: [SessionTab] = []
             for tab in window.tabs {
+                guard !tab.isWelcome else { continue }
                 tab.saveViewStates()
                 let document = tab.document
                 let views = (tab as? DocumentTabController)?.panes.compactMap { pane -> SessionView? in

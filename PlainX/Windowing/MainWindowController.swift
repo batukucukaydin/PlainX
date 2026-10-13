@@ -45,6 +45,11 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window.minSize = NSSize(width: 420, height: 260)
         window.setFrameAutosaveName("PlainXMainWindow")
         window.tabbingMode = .disallowed
+        // Tabs live in the titlebar band: transparent chrome, no title text,
+        // no separator line (Safari/Xcode-style header).
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.titlebarSeparatorStyle = .none
         super.init(window: window)
         window.delegate = self
         window.center()
@@ -119,6 +124,14 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     private var dropHost: FileDropView?
 
     // MARK: - Tabs
+
+    /// Inserts a prebuilt tab (Welcome screen, future tab kinds).
+    func addTab(_ tab: any DocumentTab, select: Bool, at index: Int? = nil) {
+        let insertionIndex = min(max(0, index ?? tabs.count), tabs.count)
+        tab.tabDelegate = self
+        tabs.insert(tab, at: insertionIndex)
+        finishAddingTab(select: select, insertionIndex: insertionIndex)
+    }
 
     func addTab(for document: PlainXDocument, select: Bool, at index: Int? = nil) {
         let insertionIndex = min(max(0, index ?? tabs.count), tabs.count)
@@ -212,6 +225,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     func closeTab(id: UUID, force: Bool = false) -> Bool {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return true }
         let tab = tabs[index]
+        if tab.isWelcome && tabs.count == 1 {
+            NSSound.beep()
+            return false
+        }
         if !force && tab.document.isDirty {
             promptSaveIfNeeded(document: tab.document, tab: tab) { [weak self] proceed in
                 guard let self, proceed else { return }
@@ -289,7 +306,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             let doc = tab.document
             return TabStripView.TabItem(
                 id: tab.id,
-                title: doc.displayName,
+                title: tab.isWelcome ? "Welcome" : doc.displayName,
                 isDirty: doc.isDirty,
                 isPinned: doc.isPinned,
                 tooltip: doc.pathDisplayName,
@@ -300,10 +317,11 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func updateWindowTitle() {
-        guard let tab = activeTab else {
+        guard let tab = activeTab, !tab.isWelcome else {
             window?.title = "PlainX"
             window?.subtitle = ""
             window?.representedURL = nil
+            window?.isDocumentEdited = false
             return
         }
         let doc = tab.document
@@ -515,6 +533,14 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
 
     func windowDidResize(_ notification: Notification) {
         updateStatusBar()
+    }
+
+    func windowDidEnterFullScreen(_ notification: Notification) {
+        tabStrip.setTrafficLightInset(8)
+    }
+
+    func windowDidExitFullScreen(_ notification: Notification) {
+        tabStrip.setTrafficLightInset(78)
     }
 
     @objc private func preferencesChanged() {

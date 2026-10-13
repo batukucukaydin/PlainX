@@ -57,8 +57,19 @@ final class StatusBarView: NSView {
     }
 
     private func setup() {
-        wantsLayer = true
-        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        // Native bottom-bar material instead of a flat fill.
+        let background = NSVisualEffectView()
+        background.material = .underWindowBackground
+        background.blendingMode = .withinWindow
+        background.state = .followsWindowActiveState
+        background.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(background)
+        NSLayoutConstraint.activate([
+            background.leadingAnchor.constraint(equalTo: leadingAnchor),
+            background.trailingAnchor.constraint(equalTo: trailingAnchor),
+            background.topAnchor.constraint(equalTo: topAnchor),
+            background.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
 
         let separator = NSBox()
         separator.boxType = .separator
@@ -127,6 +138,9 @@ final class StatusBarView: NSView {
         languageButton.title = state.languageName
         languageButton.toolTip = state.languageTooltip
         indentationButton.title = state.indentationName
+        positionLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+        selectionLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+        sizeLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
         positionLabel.stringValue = "Ln \(state.line + 1), Col \(state.column + 1)"
         selectionLabel.stringValue = state.selectionSummary
         sizeLabel.stringValue = state.fileSizeSummary

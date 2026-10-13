@@ -56,8 +56,13 @@ final class FindBarController: NSObject {
 
     private func buildUI() {
         container.translatesAutoresizingMaskIntoConstraints = false
-        container.wantsLayer = true
-        container.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+
+        let background = NSVisualEffectView()
+        background.material = .headerView
+        background.blendingMode = .withinWindow
+        background.state = .followsWindowActiveState
+        background.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(background)
 
         let separator = NSBox()
         separator.boxType = .separator
@@ -159,6 +164,10 @@ final class FindBarController: NSObject {
         replaceRow.isHidden = mode == .find
 
         NSLayoutConstraint.activate([
+            background.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            background.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            background.topAnchor.constraint(equalTo: container.topAnchor),
+            background.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             separator.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             separator.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             separator.topAnchor.constraint(equalTo: container.topAnchor),
@@ -183,13 +192,26 @@ final class FindBarController: NSObject {
     private func configure(toggle: NSButton, title: String, tooltip: String) {
         toggle.title = title
         toggle.bezelStyle = .recessed
+        toggle.isBordered = false
         toggle.setButtonType(.pushOnPushOff)
         toggle.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         toggle.toolTip = tooltip
         toggle.target = self
         toggle.action = #selector(searchOptionsChanged)
         toggle.translatesAutoresizingMaskIntoConstraints = false
+        toggle.wantsLayer = true
+        toggle.layer?.cornerRadius = 5
         toggle.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        updateToggleStyle(toggle)
+    }
+
+    /// Accent-tinted background while a search option is active.
+    private func updateToggleStyle(_ toggle: NSButton) {
+        let isOn = toggle.state == .on
+        toggle.layer?.backgroundColor = isOn
+            ? NSColor.controlAccentColor.withAlphaComponent(0.18).cgColor
+            : NSColor.clear.cgColor
+        toggle.contentTintColor = isOn ? .controlAccentColor : .secondaryLabelColor
     }
 
     private func updateHeight() {
@@ -254,6 +276,9 @@ final class FindBarController: NSObject {
     }
 
     @objc private func searchOptionsChanged() {
+        for toggle in [caseButton, wordButton, regexButton, inSelectionButton] {
+            updateToggleStyle(toggle)
+        }
         performSearch(advance: false)
     }
 
