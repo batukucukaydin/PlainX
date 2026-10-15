@@ -56,6 +56,8 @@ final class TabStripView: NSView {
     private func setup() {
         wantsLayer = true
         layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        setAccessibilityRole(.tabGroup)
+        setAccessibilityLabel("Document tabs")
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.hasHorizontalScroller = false
@@ -302,6 +304,37 @@ final class TabItemView: NSView {
 
         updateTrackingAreas()
         toolTip = "Middle-click to close"
+
+        // Expose each tab as its own accessible element so VoiceOver and
+        // keyboard-only navigation can enumerate and select tabs.
+        setAccessibilityElement(true)
+        setAccessibilityRole(.radioButton)
+    }
+
+    override func accessibilityLabel() -> String? {
+        titleLabel.stringValue
+    }
+
+    override func accessibilityValue() -> Any? {
+        isSelected ? 1 : 0
+    }
+
+    override func accessibilityHelp() -> String? {
+        toolTip
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        delegate?.tabItemDidSelect(itemID)
+        return true
+    }
+
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        let close = NSAccessibilityCustomAction(name: "Close Tab") { [weak self] in
+            guard let self else { return false }
+            self.delegate?.tabItemDidRequestClose(self.itemID)
+            return true
+        }
+        return [close]
     }
 
     func update(item: TabStripView.TabItem, isSelected: Bool) {
@@ -312,7 +345,9 @@ final class TabItemView: NSView {
         dirtyDot.isHidden = !item.isDirty
         pinImage.isHidden = !item.isPinned
         closeButton.isHidden = !isSelected && !item.isDirty
+        closeButton.setAccessibilityLabel("Close \(item.title)")
         toolTip = item.tooltip
+        setAccessibilityLabel(item.title)
         accentBar.isHidden = !isSelected
 
         if item.hasExternalChange {

@@ -70,7 +70,16 @@ final class WelcomeViewController: NSViewController {
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         let iconView = NSImageView()
-        iconView.image = NSApp.applicationIconImage
+        // Downscale the app icon once: using the 1024 px rendition directly
+        // costs ~15 MB of backing store for a 96 pt view.
+        let iconPoints = NSSize(width: 192, height: 192)
+        let smallIcon = NSImage(size: iconPoints)
+        if let source = NSApp.applicationIconImage {
+            smallIcon.lockFocus()
+            source.draw(in: NSRect(origin: .zero, size: iconPoints))
+            smallIcon.unlockFocus()
+        }
+        iconView.image = smallIcon
         iconView.imageScaling = .scaleProportionallyUpOrDown
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.widthAnchor.constraint(equalToConstant: 96).isActive = true

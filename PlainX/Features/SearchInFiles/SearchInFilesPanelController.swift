@@ -46,6 +46,7 @@ final class SearchInFilesPanelController: NSWindowController {
             backing: .buffered, defer: false
         )
         window.title = "Find in Files"
+        window.minSize = NSSize(width: 560, height: 360)
         window.setFrameAutosaveName("PlainXSearchInFilesWindow")
         super.init(window: window)
         buildUI()
@@ -90,11 +91,22 @@ final class SearchInFilesPanelController: NSWindowController {
         rootRow.orientation = .horizontal
         rootRow.spacing = 8
 
-        let togglesRow = NSStackView(views: [regexToggle, caseToggle, wholeWordToggle, NSView(), replaceField, replaceAllButton])
+        let togglesRow = NSStackView(views: [regexToggle, caseToggle, wholeWordToggle])
         togglesRow.orientation = .horizontal
         togglesRow.spacing = 10
 
-        let topStack = NSStackView(views: [rootRow, findField, togglesRow, includeField, excludeField])
+        // Replace gets a dedicated row: sharing the toggles row squeezed the
+        // field down to a sliver on narrower windows.
+        let replaceLabel = NSTextField(labelWithString: "Replace with:")
+        replaceLabel.textColor = .secondaryLabelColor
+        let replaceRow = NSStackView(views: [replaceLabel, replaceField, replaceAllButton])
+        replaceRow.orientation = .horizontal
+        replaceRow.spacing = 8
+        replaceField.widthAnchor.constraint(greaterThanOrEqualToConstant: 240).isActive = true
+        replaceField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        replaceField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        let topStack = NSStackView(views: [rootRow, findField, togglesRow, replaceRow, includeField, excludeField])
         topStack.orientation = .vertical
         topStack.spacing = 6
         topStack.edgeInsets = NSEdgeInsets(top: 10, left: 12, bottom: 8, right: 12)

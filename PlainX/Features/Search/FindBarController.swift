@@ -73,12 +73,14 @@ final class FindBarController: NSObject {
         findField.delegate = self
         findField.sendsWholeSearchString = false
         findField.sendsSearchStringImmediately = true
-        findField.widthAnchor.constraint(greaterThanOrEqualToConstant: 180).isActive = true
+        findField.widthAnchor.constraint(greaterThanOrEqualToConstant: 110).isActive = true
+        findField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         replaceField.placeholderString = "Replace with"
         replaceField.translatesAutoresizingMaskIntoConstraints = false
         replaceField.delegate = self
-        replaceField.widthAnchor.constraint(greaterThanOrEqualToConstant: 180).isActive = true
+        replaceField.widthAnchor.constraint(greaterThanOrEqualToConstant: 110).isActive = true
+        replaceField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         configure(toggle: caseButton, title: "Aa", tooltip: "Match case")
         configure(toggle: wordButton, title: "\\b", tooltip: "Whole word")
@@ -187,6 +189,29 @@ final class FindBarController: NSObject {
         ])
 
         updateHeight()
+
+        // Narrow windows: drop the optional controls instead of squeezing the
+        // text fields into unusable slivers.
+        container.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(self, selector: #selector(containerFrameChanged),
+                                               name: NSView.frameDidChangeNotification, object: container)
+        updateResponsiveVisibility()
+    }
+
+    @objc private func containerFrameChanged() {
+        updateResponsiveVisibility()
+    }
+
+    private func updateResponsiveVisibility() {
+        applyResponsiveLayout(width: container.bounds.width)
+    }
+
+    /// Responsive rules, kept as pure logic so they can be unit tested.
+    func applyResponsiveLayout(width: CGFloat) {
+        findAllButton.isHidden = width < 560
+        inSelectionButton.isHidden = width < 520
+        wordButton.isHidden = width < 480
+        countLabel.isHidden = width < 440
     }
 
     private func configure(toggle: NSButton, title: String, tooltip: String) {

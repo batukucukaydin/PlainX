@@ -1,0 +1,21 @@
+Fix the four reported UI issues; split large controllers
+
+1. Find in Files: "Replace with" gets its own labelled row with a 240 pt
+   minimum-width field (it collapsed to a sliver when sharing the toggles
+   row); panel minimum size added
+2. Dark-theme checkerboard strip: Scintilla paints folding margins with a
+   chrome-coloured pattern unless the fold-margin colours are set; both are
+   now the gutter background. New pixel-level regression test renders the
+   editor offscreen and fails on the pattern (verified by temporarily
+   reverting the fix: luminance 0.99 -> test fails)
+3. Tab accessibility: each tab is an accessible element (radio-button role,
+   label, selected value, press action, "Close Tab" custom action); strip is
+   a tab group; close buttons labelled per tab
+4. Narrow windows: responsive find bar hides optional controls (Find All,
+   in-selection, whole word, count) as width shrinks; pure-logic layout
+   rules are unit tested
+Also: AppCoordinator menu handlers and MainWindowController delegates +
+FileDropView split into focused files; performance docs updated with measured
+evidence that the blank-window baseline is AppKit, not the editor engine
+(Welcome screen with no Scintilla view measures the same).
+168 tests green.

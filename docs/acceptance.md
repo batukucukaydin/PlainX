@@ -109,6 +109,11 @@ gaps after the first acceptance pass:
 | Auto-indent was only Scintilla's indentation maintenance | Basic lexer-aware smart indent: Return after `{`/`(`/`[` indents one level, ignored inside comments/strings (tested) |
 | No hostile-input decoding coverage | Deterministic fuzz-style tests: 300 random-byte inputs, truncated multi-byte sequences at every cut point |
 | No leak pass recorded | `leaks` pass: all reported leaks are in Apple's `linkd` XPC connection (20 KB); none in PlainX code |
+| Dark theme showed a light checkerboard strip left of the editor | Scintilla paints folding margins with a chrome-coloured pattern unless the fold-margin colours are set; both are now the gutter background. A pixel-level regression test renders the editor offscreen and fails on the pattern (verified by reverting the fix) |
+| "Replace with" field in Find in Files collapsed to a sliver | Dedicated row with a labelled 240 pt minimum-width field; panel minimum size set |
+| Tabs were a single accessibility blob | Each tab is now an accessible element (radio-button role, label, selected value, press action, "Close Tab" custom action); the strip is a tab group |
+| Narrow windows could squeeze the find bar into unusable slivers | Responsive rules hide optional controls (Find All, in-selection, whole word, count) as width shrinks; unit tested |
+| Large orchestration files | AppCoordinator menu handlers and MainWindowController delegates/FileDropView split into their own files |
 
 ## Known limitations (intentionally deferred, documented)
 
@@ -119,9 +124,10 @@ gaps after the first acceptance pass:
    unsigned/ad-hoc path is fully automated.
 3. **Localization**: v1.0 ships English UI. Strings are kept as whole sentences
    so a future localization pass is mechanical rather than surgical.
-4. **Blank-window RSS (87 MB)** and **20 MB regular open (196 MB)** exceed
+4. **Blank-window RSS (82–98 MB)** and **20 MB regular open (196 MB)** exceed
    their preferred budgets; both are documented in `docs/performance.md` with
-   the measured cause and mitigation paths.
+   the measured cause (AppKit/framework baseline; Scintilla UTF-8 + style
+   buffers respectively) and mitigation paths.
 5. **Intra-line diff highlighting** and **text (not line) selection in Large
    File Mode** are future enhancements; the v1.0 behavior is documented.
 6. **V1+ items not built**: regex playground, user theme files, an
