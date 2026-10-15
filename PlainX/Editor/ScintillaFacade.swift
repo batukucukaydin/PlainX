@@ -751,7 +751,11 @@ final class ScintillaFacade: NSObject, ScintillaNotificationProtocol {
         }
         send(SCI_SETSELALPHA, w: 255)
 
-        // Fold margin
+        // Fold margin. Scintilla paints folding margins with a checkerboard
+        // pattern built from the chrome colours unless the fold-margin colours
+        // are set; using the gutter background for both makes it solid.
+        send(SCI_SETFOLDMARGINCOLOUR, w: 1, l: Int(pxColorInt(theme.lineNumberBackground)))
+        send(SCI_SETFOLDMARGINHICOLOUR, w: 1, l: Int(pxColorInt(theme.lineNumberBackground)))
         send(SCI_MARKERSETBACK, w: Int(SC_MARKNUM_FOLDER), l: Int(pxColorInt(theme.lineNumberBackground)))
         send(SCI_MARKERSETFORE, w: Int(SC_MARKNUM_FOLDER), l: Int(pxColorInt(theme.foldMarkerForeground)))
         send(SCI_MARKERSETBACK, w: Int(SC_MARKNUM_FOLDEROPEN), l: Int(pxColorInt(theme.lineNumberBackground)))

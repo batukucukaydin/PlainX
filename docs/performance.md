@@ -72,10 +72,13 @@ Launch targets (warm cache): UI visible ≤ 500 ms preferred, usable editor
 
 ## Known gaps
 
-- **Blank-window RSS (87 MB)** is within the 90 MB hard threshold but above
-  the 60 MB preferred target. The bulk is AppKit/CoreText machinery plus the
-  Scintilla view created with the first editor tab. Lazy editor instantiation
-  is tracked as an optimization item for a future release.
+- **Blank-window RSS (82–98 MB)** is around the 90 MB hard-review threshold
+  and above the 60 MB preferred target. Measured evidence (2026-10-13):
+  an untitled editor window sits at 82 MB, while the Welcome screen (which
+  creates **no** Scintilla view at all) measures 97–98 MB warm and cold.
+  The baseline is therefore AppKit/framework loading plus view/text caches,
+  not the editor engine or document buffers. Reducing it requires trimming
+  the window content and framework footprint, tracked for a future release.
 - **20 MB regular-mode open (196 MB)** exceeds the 160 MB target: the regular
   path holds the decoded `String` plus Scintilla's UTF-8 buffer, style bytes,
   and line layout. Files at or above the Large File threshold (default 64 MB)
