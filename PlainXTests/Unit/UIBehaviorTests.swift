@@ -16,6 +16,7 @@ final class TabAccessibilityTests: XCTestCase {
                                         isPinned: false, tooltip: "/tmp/config.json",
                                         hasExternalChange: false)
         itemView.update(item: item, isSelected: true)
+        XCTAssertTrue(itemView.acceptsFirstResponder)
         XCTAssertEqual(itemView.accessibilityRole(), .radioButton)
         XCTAssertEqual(itemView.accessibilityLabel(), "config.json")
         XCTAssertEqual(itemView.accessibilityValue() as? Int, 1)
@@ -50,6 +51,22 @@ final class FindBarLayoutTests: XCTestCase {
         return nil
     }
 
+    private func button(accessibilityLabel label: String, in view: NSView) -> NSButton? {
+        if let button = view as? NSButton, button.accessibilityLabel() == label { return button }
+        for subview in view.subviews {
+            if let found = button(accessibilityLabel: label, in: subview) { return found }
+        }
+        return nil
+    }
+
+    private func searchField(in view: NSView) -> NSSearchField? {
+        if let field = view as? NSSearchField { return field }
+        for subview in view.subviews {
+            if let found = searchField(in: subview) { return found }
+        }
+        return nil
+    }
+
     func testNarrowWindowHidesOptionalControls() {
         let (coordinator, window, findBar) = makeFindBar(width: 420)
         findBar.applyResponsiveLayout(width: 420)
@@ -57,7 +74,10 @@ final class FindBarLayoutTests: XCTestCase {
         XCTAssertEqual(button(titled: "⌷", in: findBar.view)?.isHidden, true)
         XCTAssertEqual(button(titled: "\\b", in: findBar.view)?.isHidden, true)
         // Core controls stay available.
-        XCTAssertEqual(button(titled: "Find All", in: findBar.view)?.isHidden, true)
+        XCTAssertNotNil(searchField(in: findBar.view))
+        XCTAssertEqual(button(titled: ".*", in: findBar.view)?.isHidden, false)
+        XCTAssertEqual(button(accessibilityLabel: "Previous match", in: findBar.view)?.isHidden, false)
+        XCTAssertEqual(button(accessibilityLabel: "Next match", in: findBar.view)?.isHidden, false)
         _ = coordinator
         window.forceCloseWindow()
     }

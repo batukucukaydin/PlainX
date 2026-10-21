@@ -144,6 +144,21 @@ final class TabStripView: NSView {
         }
     }
 
+    func focusAdjacentTab(from itemID: UUID, offset: Int) {
+        guard !items.isEmpty,
+              let currentIndex = items.firstIndex(where: { $0.id == itemID }) else { return }
+        let nextIndex = (currentIndex + offset + items.count) % items.count
+        focusTab(at: nextIndex)
+    }
+
+    func focusTab(at index: Int) {
+        guard items.indices.contains(index),
+              let tabView = itemViews[items[index].id] else { return }
+        window?.makeFirstResponder(tabView)
+        delegate?.tabStripDidSelectTab(items[index].id)
+        scrollView.contentView.scrollToVisible(tabView.frame.insetBy(dx: -24, dy: 0))
+    }
+
     @objc private func handleNewTab() {
         delegate?.tabStripDidRequestNewDocument()
     }
@@ -217,6 +232,8 @@ final class TabItemView: NSView {
     private let accentBar = NSView()
     private var isHovered = false
     private var isSelected = false
+    private var isKeyboardFocused = false
+    private var hasExternalChange = false
     private var dragStartIndex: Int?
 
     private static let minWidth: CGFloat = 110
@@ -311,6 +328,53 @@ final class TabItemView: NSView {
         setAccessibilityRole(.radioButton)
     }
 
+    override var acceptsFirstResponder: Bool { true }
+
+    override func becomeFirstResponder() -> Bool {
+        guard super.becomeFirstResponder() else { return false }
+        isKeyboardFocused = true
+        updateBorderAppearance()
+        return true
+    }
+
+    override func resignFirstResponder() -> Bool {
+        guard super.resignFirstResponder() else { return false }
+        isKeyboardFocused = false
+        updateBorderAppearance()
+        return true
+    }
+
+    override func keyDown(with event: NSEvent) {
+        guard let strip = tabStripAncestor else {
+            super.keyDown(with: event)
+            return
+        }
+
+        switch event.keyCode {
+        case 123: // Left arrow
+            strip.focusAdjacentTab(from: itemID, offset: -1)
+        case 124: // Right arrow
+            strip.focusAdjacentTab(from: itemID, offset: 1)
+        case 115: // Home
+            strip.focusTab(at: 0)
+        case 119: // End
+            strip.focusTab(at: strip.items.count - 1)
+        case 36, 49: // Return or Space
+            delegate?.tabItemDidSelect(itemID)
+        default:
+            super.keyDown(with: event)
+        }
+    }
+
+    private var tabStripAncestor: TabStripView? {
+        var ancestor = superview
+        while let view = ancestor {
+            if let strip = view as? TabStripView { return strip }
+            ancestor = view.superview
+        }
+        return nil
+    }
+
     override func accessibilityLabel() -> String? {
         titleLabel.stringValue
     }
@@ -320,7 +384,9 @@ final class TabItemView: NSView {
     }
 
     override func accessibilityHelp() -> String? {
-        toolTip
+        let keyboardHelp = "Use Left or Right Arrow to select another tab. Use Home or End to select the first or last tab. Middle-click to close this tab."
+        guard let toolTip, !toolTip.isEmpty else { return keyboardHelp }
+        return "\(toolTip). \(keyboardHelp)"
     }
 
     override func accessibilityPerformPress() -> Bool {
@@ -339,6 +405,7 @@ final class TabItemView: NSView {
 
     func update(item: TabStripView.TabItem, isSelected: Bool) {
         self.isSelected = isSelected
+        hasExternalChange = item.hasExternalChange
         titleLabel.stringValue = item.title
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
         titleLabel.textColor = isSelected ? .labelColor : .secondaryLabelColor
@@ -351,17 +418,27 @@ final class TabItemView: NSView {
         accentBar.isHidden = !isSelected
 
         if item.hasExternalChange {
-            layer?.borderColor = NSColor.systemOrange.cgColor
             layer?.backgroundColor = NSColor.systemOrange.withAlphaComponent(isSelected ? 0.18 : 0.10).cgColor
         } else if isSelected {
-            layer?.borderColor = NSColor.separatorColor.cgColor
             layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
         } else if isHovered {
-            layer?.borderColor = NSColor.clear.cgColor
             layer?.backgroundColor = NSColor.quaternaryLabelColor.withAlphaComponent(0.35).cgColor
         } else {
-            layer?.borderColor = NSColor.clear.cgColor
             layer?.backgroundColor = NSColor.clear.cgColor
+        }
+        updateBorderAppearance()
+    }
+
+    private func updateBorderAppearance() {
+        layer?.borderWidth = isKeyboardFocused ? 2 : 1
+        if isKeyboardFocused {
+            layer?.borderColor = NSColor.keyboardFocusIndicatorColor.cgColor
+        } else if hasExternalChange {
+            layer?.borderColor = NSColor.systemOrange.cgColor
+        } else if isSelected {
+            layer?.borderColor = NSColor.separatorColor.cgColor
+        } else {
+            layer?.borderColor = NSColor.clear.cgColor
         }
     }
 
@@ -369,6 +446,7 @@ final class TabItemView: NSView {
 
     override func mouseDown(with event: NSEvent) {
         dragOrigin = event.locationInWindow
+        window?.makeFirstResponder(self)
         delegate?.tabItemDidSelect(itemID)
     }
 

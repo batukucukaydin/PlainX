@@ -24,3 +24,4 @@ build/benchmark-fixtures/
 .idea/
 .vscode/
 *.swp
+.git-corrupt-*/
